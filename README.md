@@ -2,4 +2,4 @@
 
 test commit
 
-sample
+sample commit
