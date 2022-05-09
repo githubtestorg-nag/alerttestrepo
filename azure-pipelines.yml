@@ -1,19 +1,23 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
-trigger:
-- main
-
-pool:
-  vmImage: ubuntu-latest
-
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: Bash@3
+  inputs:
+   targetType: 'inline'
+   script: |
+    i=0
+        while [ $i -lt 30 ]
+        do
+            curl --location --request POST 'https://qa.armorcode.ai/client/buildvalidation' --header 'Content-Type: application/json' --header 'Authorization: Bearer 5f91aacb-30d8-4714-b838-b01563e9da5f'  -d '{ "env": "Production", "product": "3461", "subProduct": "7601", "buildTool":"AZURE_PIPELINE", "buildNumber": "$(Build.BuildId)"}' > result.json
+            status=$(jq -r '.status' result.json)
+            if [ $status = "HOLD" ]
+            then
+                sleep 10
+                i=$(( $i + 1 ))
+                if [ $i = 30 ]
+                then
+                    exit 1
+                else
+                    continue
+                fi
+            else
+                break
+            fi
+        done
